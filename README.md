@@ -19,3 +19,6 @@ How to use
 6. Package is ready for install and located at `build/<blah>.tar.xz`;
 
 See `go-makepkg -h` for more info.
+
+`go-makepkg` by itself can be packaged using itself:  
+`go-makepkg -B "go-makepkg tool" git://github.com/seletskiy/go-makepkg.git`
