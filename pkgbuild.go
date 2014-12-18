@@ -12,7 +12,7 @@ license=('{{.License}}')
 makedepends=('go' 'git')
 
 source=(
-	"{{.RepoUrl}}"{{range .Files}}
+	"{{.PkgName}}::{{.RepoUrl}}"{{range .Files}}
 	"{{.Name}}"{{end}}
 )
 
