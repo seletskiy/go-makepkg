@@ -33,6 +33,11 @@ pkgver() {
 build() {
 	cd "$srcdir/$pkgname"
 
+	if [ -L "$srcdir/$pkgname" ]; then
+		rm "$srcdir/$pkgname" -rf
+		mv "$srcdir/.go/src/$pkgname/" "$srcdir/$pkgname"
+	fi
+
 	rm -rf "$srcdir/.go/src"
 
 	mkdir -p "$srcdir/.go/src"
