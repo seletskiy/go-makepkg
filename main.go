@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
@@ -20,10 +21,11 @@ Will create PKGBUILD which can be used for building package from specified
 repo, including optinal additional files to the package.
 
 Tool also capable of creating simple systemd.service file for starting/stoping
-daemon.
+daemon and creating .gitignore file in the build directory.
 
 If you want to include additional files to the package, make sure they are
-stored by the path they will be placed in the system after package installation.
+stored by the path they will be placed in the system after package
+installation.
 E.g., if you want to include config to the package, place it into
 'etc/somename/config.conf' directory.
 
@@ -35,12 +37,15 @@ into the package):
   go-makepkg "my cool package" git://my-repo-url **/* -B
 
 Usage:
-  go-makepkg -h | --help
   go-makepkg [options] <desc> <repo> [<file>...]
+  go-makepkg -h | --help
+  go-makepkg -v | --version
 
 Options:
+  -v --version  Show version.
   -h --help     Show this help.
   -s            Create service file and include it to the package.
+  -g            Create .gitignore file.
   -B            Run 'makepkg' after creating PKGBUILD.
   -n=<PKGNAME>  Use specified package name instead of automatically generated
                 from <repo> URL.
@@ -72,18 +77,22 @@ type serviceData struct {
 }
 
 func main() {
-	args, _ := docopt.Parse(usage, nil, true, "go-makepkg 1.0", false)
+	args, err := docopt.Parse(usage, nil, true, "go-makepkg 2.0", false, true)
+	if err != nil {
+		panic(err)
+	}
 
 	var (
-		description     = args[`<desc>`].(string)
-		repoUrl         = args[`<repo>`].(string)
-		fileList        = args[`<file>`].([]string)
-		license         = args[`-l`].(string)
-		packageRelease  = args[`-r`].(string)
-		dirName         = args[`-d`].(string)
-		outputName      = args[`-o`].(string)
-		doRunBuild      = args[`-B`].(bool)
-		doCreateService = args[`-s`].(bool)
+		description       = args[`<desc>`].(string)
+		repoUrl           = args[`<repo>`].(string)
+		fileList          = args[`<file>`].([]string)
+		license           = args[`-l`].(string)
+		packageRelease    = args[`-r`].(string)
+		dirName           = args[`-d`].(string)
+		outputName        = args[`-o`].(string)
+		doRunBuild        = args[`-B`].(bool)
+		doCreateService   = args[`-s`].(bool)
+		doCreateGitignore = args[`-g`].(bool)
 	)
 
 	packageName := getPackageNameFromRepoUrl(repoUrl)
@@ -91,7 +100,7 @@ func main() {
 		packageName = args[`-n`].(string)
 	}
 
-	err := createOutputDir(dirName)
+	err = createOutputDir(dirName)
 	if err != nil {
 		panic(err)
 	}
@@ -148,7 +157,7 @@ func main() {
 		panic(err)
 	}
 
-	createPkgbuild(output, pkgData{
+	err = createPkgbuild(output, pkgData{
 		PkgName: packageName,
 		PkgRel:  packageRelease,
 		RepoUrl: repoUrl,
@@ -157,9 +166,22 @@ func main() {
 		Files:   files,
 		Backup:  backup,
 	})
+	if err != nil {
+		panic(err)
+	}
+
+	if doCreateGitignore {
+		err = createGitignore(dirName, packageName)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	if doRunBuild {
-		runBuild(dirName)
+		err = runBuild(dirName)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -176,7 +198,10 @@ func runBuild(dir string) error {
 		return err
 	}
 
-	syscall.Exec(binaryPath, []string{"makepkg", "-f"}, os.Environ())
+	err = syscall.Exec(binaryPath, []string{"makepkg", "-f"}, os.Environ())
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -229,6 +254,23 @@ func createServiceFile(output io.Writer, data serviceData) error {
 	return serviceTemplate.Execute(output, data)
 }
 
+func createGitignore(dirName string, pkgName string) error {
+	logStep("Creating .gitignore...")
+
+	ignoreFiles := []string{
+		"/*.tar.xz",
+		"/pkg",
+		"/src",
+		"/" + pkgName,
+	}
+
+	contents := strings.Join(ignoreFiles, "\n") + "\n"
+
+	return ioutil.WriteFile(
+		filepath.Join(dirName, ".gitignore"), []byte(contents), 0644,
+	)
+}
+
 func prepareFileList(names []string, outDir string) ([]pkgFile, error) {
 	files := []pkgFile{}
 
@@ -276,7 +318,11 @@ func getFileHash(path string) (string, error) {
 		return "", err
 	}
 
-	io.Copy(hash, file)
+	_, err = io.Copy(hash, file)
+	if err != nil {
+		return "", err
+	}
+
 	return fmt.Sprintf("%x", hash.Sum(nil)), nil
 }
 
