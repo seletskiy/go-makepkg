@@ -145,7 +145,7 @@ func main() {
 		files = append(files, pkgFile{
 			Name: serviceName,
 			Path: filepath.Join(
-				"/usr/lib/systemd/system/",
+				"usr/lib/systemd/system/",
 				serviceName,
 			),
 			Hash: hash,
