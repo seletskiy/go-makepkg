@@ -10,7 +10,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"syscall"
 
 	"github.com/docopt/docopt-go"
 )
@@ -47,6 +46,7 @@ Options:
   -s            Create service file and include it to the package.
   -g            Create .gitignore file.
   -B            Run 'makepkg' after creating PKGBUILD.
+  -c            Clean up leftover files and folders.
   -n=<PKGNAME>  Use specified package name instead of automatically generated
                 from <repo> URL.
   -l=<LICENSE>  License to use [default: GPL].
@@ -91,6 +91,7 @@ func main() {
 		dirName           = args[`-d`].(string)
 		outputName        = args[`-o`].(string)
 		doRunBuild        = args[`-B`].(bool)
+		doCleanUp         = args[`-c`].(bool)
 		doCreateService   = args[`-s`].(bool)
 		doCreateGitignore = args[`-g`].(bool)
 	)
@@ -178,32 +179,44 @@ func main() {
 	}
 
 	if doRunBuild {
-		err = runBuild(dirName)
+		err = runBuild(dirName, doCleanUp)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if doCleanUp {
+		err = cleanUp(dirName, packageName)
 		if err != nil {
 			panic(err)
 		}
 	}
 }
 
-func runBuild(dir string) error {
+func runBuild(dir string, cleanUp bool) error {
 	logStep("Running makepkg...")
 
-	binaryPath, err := exec.LookPath("makepkg")
-	if err != nil {
-		return err
+	args := []string{"-f"}
+	if cleanUp {
+		args = append(args, "-c")
 	}
 
-	err = os.Chdir(dir)
-	if err != nil {
-		return err
-	}
+	cmd := exec.Command("makepkg", args...)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Dir = dir
 
-	err = syscall.Exec(binaryPath, []string{"makepkg", "-f"}, os.Environ())
+	err := cmd.Run()
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func cleanUp(dir, pkgName string) error {
+	return os.RemoveAll(filepath.Join(dir, pkgName))
 }
 
 func copyLocalFiles(files []pkgFile, outDir string) error {
