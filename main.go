@@ -77,7 +77,7 @@ type serviceData struct {
 }
 
 func main() {
-	args, err := docopt.Parse(usage, nil, true, "go-makepkg 2.0", false, true)
+	args, err := docopt.Parse(usage, nil, true, "go-makepkg 2.1", false, true)
 	if err != nil {
 		panic(err)
 	}
