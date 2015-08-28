@@ -27,7 +27,9 @@ backup=({{range .Backup}}
 
 pkgver() {
 	cd "$srcdir/$pkgname"
-	git log -1 --format="%cd" --date=short | sed s/-//g
+	local date=$(git log -1 --format="%cd" --date=short | sed s/-//g)
+	local commit=$(git rev-parse --short HEAD)
+	echo "$date.$commit"
 }
 
 build() {
