@@ -14,7 +14,7 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
-var usage = `PKGBUILD generator for Go-lang programs.
+var usage = `PKGBUILD generator for Golang programs.
 
 Will create PKGBUILD which can be used for building package from specified
 repo, including optinal additional files to the package.

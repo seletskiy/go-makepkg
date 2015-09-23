@@ -1,7 +1,7 @@
 go-makepkg
 ==========
 
-Tool for fast packaging Go-lang programs under the archlinux.
+Tool for fast packaging Golang programs under the archlinux.
 
 It will automatically generate appropriate PKGBUILD and systemd.service files.
 
