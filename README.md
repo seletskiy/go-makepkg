@@ -18,6 +18,18 @@ How to use
    `go-makepkg -sB "my description" git://url-to-prog/repo.git **/*`;
 6. Package is ready for install and located at `build/<blah>.tar.xz`;
 
+Typical invocation
+==================
+
+```
+go-makepkg -gsB "my cool package" git://github.com/seletskiy/go-makepkg *
+```
+
+Will generate .gitignore, PKGBUILD and .service file for specified repo (e.g.
+go-makepkg) and include all files under current directory to the package.
+
+If you do not want to build package automatically, omit `-B` flag.
+
 See `go-makepkg -h` for more info.
 
 `go-makepkg` by itself can be packaged using itself:  
