@@ -52,8 +52,11 @@ build() {
 	cd "$srcdir/.go/src/$pkgname/"
 	ln -sf "$srcdir/.go/src/$pkgname/" "$srcdir/$pkgname"
 
+	git submodule init
+	git submodule update
+
 	echo "Running 'go get'..."
-	go get
+	GO15VENDOREXPERIMENT=1 go get
 }
 
 package() {
