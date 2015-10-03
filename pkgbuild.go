@@ -56,7 +56,7 @@ build() {
 	git submodule update
 
 	echo "Running 'go get'..."
-	go get
+	GO15VENDOREXPERIMENT=1 go get
 }
 
 package() {
