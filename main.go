@@ -65,7 +65,7 @@ type pkgData struct {
 	PkgName string
 	PkgRel  string
 	PkgDesc string
-	RepoUrl string
+	RepoURL string
 	License string
 	Files   []pkgFile
 	Backup  []string
@@ -84,7 +84,7 @@ func main() {
 
 	var (
 		description       = args[`<desc>`].(string)
-		repoUrl           = args[`<repo>`].(string)
+		repoURL           = args[`<repo>`].(string)
 		fileList          = args[`<file>`].([]string)
 		license           = args[`-l`].(string)
 		packageRelease    = args[`-r`].(string)
@@ -96,7 +96,7 @@ func main() {
 		doCreateGitignore = args[`-g`].(bool)
 	)
 
-	packageName := getPackageNameFromRepoUrl(repoUrl)
+	packageName := getPackageNameFromRepoURL(repoURL)
 	if args[`-n`] != nil {
 		packageName = args[`-n`].(string)
 	}
@@ -161,7 +161,7 @@ func main() {
 	err = createPkgbuild(output, pkgData{
 		PkgName: packageName,
 		PkgRel:  packageRelease,
-		RepoUrl: repoUrl,
+		RepoURL: repoURL,
 		License: license,
 		PkgDesc: description,
 		Files:   files,
@@ -353,7 +353,7 @@ func createBackupList(files []pkgFile) []string {
 	return backup
 }
 
-func getPackageNameFromRepoUrl(repo string) string {
+func getPackageNameFromRepoURL(repo string) string {
 	base := path.Base(repo)
 	ext := path.Ext(base)
 	return strings.TrimSuffix(base, ext)
