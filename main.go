@@ -35,6 +35,11 @@ Trivial run is (all files in the directory except generated will be included
 into the package):
   go-makepkg "my cool package" git://my-repo-url **/* -B
 
+Note: if you want to create package for the project, which uses sub-directories
+for binaries and go-gettable with suffix '...', you should specify that suffix
+to repo URL as well, like:
+  go-makepkg "gb tool" git://github.com/constabulary/gb/... -B
+
 Usage:
   go-makepkg [options] <desc> <repo> [<file>...]
   go-makepkg -h | --help
@@ -69,6 +74,8 @@ type pkgData struct {
 	License string
 	Files   []pkgFile
 	Backup  []string
+
+	IsWildcardBuild bool
 }
 
 type serviceData struct {
@@ -77,7 +84,7 @@ type serviceData struct {
 }
 
 func main() {
-	args, err := docopt.Parse(usage, nil, true, "go-makepkg 2.1", false, true)
+	args, err := docopt.Parse(usage, nil, true, "go-makepkg 2.2", false, true)
 	if err != nil {
 		panic(err)
 	}
@@ -96,7 +103,9 @@ func main() {
 		doCreateGitignore = args[`-g`].(bool)
 	)
 
-	packageName := getPackageNameFromRepoURL(repoURL)
+	safeRepoURL, isWildcardBuild := trimWildcardFromRepoURL(repoURL)
+
+	packageName := getPackageNameFromRepoURL(safeRepoURL)
 	if args[`-n`] != nil {
 		packageName = args[`-n`].(string)
 	}
@@ -161,11 +170,13 @@ func main() {
 	err = createPkgbuild(output, pkgData{
 		PkgName: packageName,
 		PkgRel:  packageRelease,
-		RepoURL: repoURL,
+		RepoURL: safeRepoURL,
 		License: license,
 		PkgDesc: description,
 		Files:   files,
 		Backup:  backup,
+
+		IsWildcardBuild: isWildcardBuild,
 	})
 	if err != nil {
 		panic(err)
@@ -357,6 +368,11 @@ func getPackageNameFromRepoURL(repo string) string {
 	base := path.Base(repo)
 	ext := path.Ext(base)
 	return strings.TrimSuffix(base, ext)
+}
+
+func trimWildcardFromRepoURL(repo string) (string, bool) {
+	safeURL := strings.TrimSuffix(repo, "/...")
+	return safeURL, safeURL != repo
 }
 
 func logSubStep(msg string, data ...interface{}) {

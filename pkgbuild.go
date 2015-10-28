@@ -56,11 +56,13 @@ build() {
 	git submodule update
 
 	echo "Running 'go get'..."
-	GO15VENDOREXPERIMENT=1 go get
+	GO15VENDOREXPERIMENT=1 go get{{if .IsWildcardBuild}} ./...{{end}}
 }
 
 package() {
-	install -DT "$srcdir/.go/bin/$pkgname" "$pkgdir/usr/bin/$pkgname"{{range .Files}}
+	find "$srcdir/.go/bin/" -type f -executable | while read filename; do
+		install -DT "$filename" "$pkgdir/usr/bin/$(basename $filename)"
+	done{{range .Files}}
 	install -DT -m0755 "$srcdir/{{.Name}}" "$pkgdir/{{.Path}}"{{end}}
 }
 `))
