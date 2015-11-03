@@ -52,12 +52,13 @@ Options:
   -g            Create .gitignore file.
   -B            Run 'makepkg' after creating PKGBUILD.
   -c            Clean up leftover files and folders.
-  -n=<PKGNAME>  Use specified package name instead of automatically generated
+  -n <PKGNAME>  Use specified package name instead of automatically generated
                 from <repo> URL.
-  -l=<LICENSE>  License to use [default: GPL].
-  -r=<PKGREL>   Specify package release number [default: 1].
-  -d=<DIR>      Directory to place PKGBUILD [default: build].
-  -o=<NAME>     File to write PKGBULD [default: PKGBUILD].
+  -l <LICENSE>  License to use [default: GPL].
+  -r <PKGREL>   Specify package release number [default: 1].
+  -d <DIR>      Directory to place PKGBUILD [default: build].
+  -o <NAME>     File to write PKGBULD [default: PKGBUILD].
+  -m <NAME>     Specify maintainer$MAINTAINER.
 `
 
 type pkgFile struct {
@@ -67,14 +68,14 @@ type pkgFile struct {
 }
 
 type pkgData struct {
-	PkgName string
-	PkgRel  string
-	PkgDesc string
-	RepoURL string
-	License string
-	Files   []pkgFile
-	Backup  []string
-
+	Maintainer      string
+	PkgName         string
+	PkgRel          string
+	PkgDesc         string
+	RepoURL         string
+	License         string
+	Files           []pkgFile
+	Backup          []string
 	IsWildcardBuild bool
 }
 
@@ -84,7 +85,9 @@ type serviceData struct {
 }
 
 func main() {
-	args, err := docopt.Parse(usage, nil, true, "go-makepkg 2.2", false, true)
+	args, err := docopt.Parse(
+		replaceUsageDefaults(usage), nil, true, "go-makepkg 3.0", false, true,
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -101,6 +104,7 @@ func main() {
 		doCleanUp         = args[`-c`].(bool)
 		doCreateService   = args[`-s`].(bool)
 		doCreateGitignore = args[`-g`].(bool)
+		maintainer        = args[`-m`].(string)
 	)
 
 	safeRepoURL, isWildcardBuild := trimWildcardFromRepoURL(repoURL)
@@ -168,14 +172,14 @@ func main() {
 	}
 
 	err = createPkgbuild(output, pkgData{
-		PkgName: packageName,
-		PkgRel:  packageRelease,
-		RepoURL: safeRepoURL,
-		License: license,
-		PkgDesc: description,
-		Files:   files,
-		Backup:  backup,
-
+		Maintainer:      maintainer,
+		PkgName:         packageName,
+		PkgRel:          packageRelease,
+		RepoURL:         repoURL,
+		License:         license,
+		PkgDesc:         description,
+		Files:           files,
+		Backup:          backup,
 		IsWildcardBuild: isWildcardBuild,
 	})
 	if err != nil {
@@ -381,4 +385,30 @@ func logSubStep(msg string, data ...interface{}) {
 
 func logStep(msg string, data ...interface{}) {
 	fmt.Printf("\x1b[1;32m==> \x1b[39m%s\n", fmt.Sprintf(msg, data...))
+}
+
+func replaceUsageDefaults(usage string) string {
+	maintainer, _ := getMaintainerInfo()
+	if maintainer != "" {
+		maintainer = " [default: " + maintainer + "]"
+	}
+
+	return strings.Replace(usage, "$MAINTAINER", maintainer, -1)
+}
+
+func getMaintainerInfo() (string, error) {
+	cmdName := exec.Command("git", "config", "--global", "user.name")
+	name, err := cmdName.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+
+	cmdEmail := exec.Command("git", "config", "--global", "user.email")
+	email, err := cmdEmail.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSpace(string(name)) +
+		" <" + strings.TrimSpace(string(email)) + ">", nil
 }
