@@ -66,5 +66,6 @@ package() {
 		install -DT "$filename" "$pkgdir/usr/bin/$(basename $filename)"
 	done{{range .Files}}
 	install -DT -m0755 "$srcdir/{{.Name}}" "$pkgdir/{{.Path}}"{{end}}
+	git clean -fdX
 }
 `))
