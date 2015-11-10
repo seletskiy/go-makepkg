@@ -14,6 +14,7 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
+var version = "3.0"
 var usage = `PKGBUILD generator for Golang programs.
 
 Will create PKGBUILD which can be used for building package from specified
@@ -59,6 +60,7 @@ Options:
   -d <DIR>      Directory to place PKGBUILD [default: build].
   -o <NAME>     File to write PKGBULD [default: PKGBUILD].
   -m <NAME>     Specify maintainer$MAINTAINER.
+  -p <VAR>      Pass pkgver to specified global variable using ldflags.
 `
 
 type pkgFile struct {
@@ -77,6 +79,7 @@ type pkgData struct {
 	Files           []pkgFile
 	Backup          []string
 	IsWildcardBuild bool
+	VersionVarName  string
 }
 
 type serviceData struct {
@@ -86,7 +89,8 @@ type serviceData struct {
 
 func main() {
 	args, err := docopt.Parse(
-		replaceUsageDefaults(usage), nil, true, "go-makepkg 3.0", false, true,
+		replaceUsageDefaults(usage),
+		nil, true, "go-makepkg "+version, false, true,
 	)
 	if err != nil {
 		panic(err)
@@ -105,6 +109,7 @@ func main() {
 		doCreateService   = args[`-s`].(bool)
 		doCreateGitignore = args[`-g`].(bool)
 		maintainer        = args[`-m`].(string)
+		versionVarName, _ = args[`-p`].(string)
 	)
 
 	safeRepoURL, isWildcardBuild := trimWildcardFromRepoURL(repoURL)
@@ -181,6 +186,7 @@ func main() {
 		Files:           files,
 		Backup:          backup,
 		IsWildcardBuild: isWildcardBuild,
+		VersionVarName:  versionVarName,
 	})
 	if err != nil {
 		panic(err)

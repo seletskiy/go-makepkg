@@ -58,7 +58,9 @@ build() {
 	git submodule update
 
 	echo "Running 'go get'..."
-	GO15VENDOREXPERIMENT=1 go get{{if .IsWildcardBuild}} ./...{{end}}
+	GO15VENDOREXPERIMENT=1 go get{{if ne .VersionVarName ""}} \
+		-ldflags="-X main.{{.VersionVarName}}=$pkgver-$pkgrel"{{end}}{{if .IsWildcardBuild}} \
+		./...{{end}}
 }
 
 package() {
