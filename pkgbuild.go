@@ -59,7 +59,7 @@ build() {
 
 	echo "Running 'go get'..."
 	GO15VENDOREXPERIMENT=1 go get{{if ne .VersionVarName ""}} \
-		-ldflags="-X {{.VersionVarName}}=$pkgver-$pkgrel"{{end}}{{if .IsWildcardBuild}} \
+		-ldflags="-X main.{{.VersionVarName}}=$pkgver-$pkgrel"{{end}}{{if .IsWildcardBuild}} \
 		./...{{end}}
 }
 
