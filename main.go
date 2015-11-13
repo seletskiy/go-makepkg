@@ -180,7 +180,7 @@ func main() {
 		Maintainer:      maintainer,
 		PkgName:         packageName,
 		PkgRel:          packageRelease,
-		RepoURL:         repoURL,
+		RepoURL:         safeRepoURL,
 		License:         license,
 		PkgDesc:         description,
 		Files:           files,
