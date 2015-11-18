@@ -11,7 +11,14 @@ pkgrel={{.PkgRel}}
 pkgdesc="{{.PkgDesc}}"
 arch=('i686' 'x86_64')
 license=('{{.License}}')
-makedepends=('go' 'git')
+depends=({{range .Dependencies}}
+	'{{.}}'{{end}}
+)
+makedepends=(
+	'go'
+	'git'{{range .MakeDependencies}}
+	'{{.}}'{{end}}
+)
 
 source=(
 	"{{.PkgName}}::{{.RepoURL}}"{{range .Files}}
