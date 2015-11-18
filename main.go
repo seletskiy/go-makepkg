@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"path"
@@ -121,17 +122,17 @@ func main() {
 
 	err = createOutputDir(dirName)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	files, err := prepareFileList(fileList, dirName)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	err = copyLocalFiles(files, dirName)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	backup := createBackupList(files)
@@ -144,7 +145,7 @@ func main() {
 		))
 
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		err = createServiceFile(output, serviceData{
@@ -153,12 +154,12 @@ func main() {
 		})
 
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		hash, err := getFileHash(output.Name())
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		files = append(files, pkgFile{
@@ -173,7 +174,7 @@ func main() {
 
 	output, err := os.Create(filepath.Join(dirName, outputName))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	err = createPkgbuild(output, pkgData{
@@ -189,27 +190,27 @@ func main() {
 		VersionVarName:  versionVarName,
 	})
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	if doCreateGitignore {
 		err = createGitignore(dirName, packageName)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
 	if doRunBuild {
 		err = runBuild(dirName, doCleanUp)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
 	if doCleanUp {
 		err = cleanUp(dirName, packageName)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 }
