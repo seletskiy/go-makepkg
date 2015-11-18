@@ -15,7 +15,7 @@ import (
 	"github.com/docopt/docopt-go"
 )
 
-var version = "3.0"
+var version = "3.1"
 var usage = `PKGBUILD generator for Golang programs.
 
 Will create PKGBUILD which can be used for building package from specified
