@@ -62,6 +62,8 @@ Options:
   -o <NAME>     File to write PKGBULD [default: PKGBUILD].
   -m <NAME>     Specify maintainer$MAINTAINER.
   -p <VAR>      Pass pkgver to specified global variable using ldflags.
+  -D <LIST>     Comma-separated list of runtime package dependencies (depends).
+  -M <LIST>     Comma-separated list of make package dependencies (makedepends).
 `
 
 type pkgFile struct {
@@ -71,21 +73,30 @@ type pkgFile struct {
 }
 
 type pkgData struct {
-	Maintainer      string
-	PkgName         string
-	PkgRel          string
-	PkgDesc         string
-	RepoURL         string
-	License         string
-	Files           []pkgFile
-	Backup          []string
-	IsWildcardBuild bool
-	VersionVarName  string
+	Maintainer       string
+	PkgName          string
+	PkgRel           string
+	PkgDesc          string
+	RepoURL          string
+	License          string
+	Files            []pkgFile
+	Dependencies     []string
+	MakeDependencies []string
+	Backup           []string
+	IsWildcardBuild  bool
+	VersionVarName   string
 }
 
 type serviceData struct {
 	Description string
 	ExecName    string
+}
+
+func parseCommaList(v interface{}) []string {
+	if v == nil {
+		return []string{}
+	}
+	return strings.Split(v.(string), ",")
 }
 
 func main() {
@@ -111,6 +122,8 @@ func main() {
 		doCreateGitignore = args[`-g`].(bool)
 		maintainer        = args[`-m`].(string)
 		versionVarName, _ = args[`-p`].(string)
+		dependencies      = parseCommaList(args[`-D`])
+		makeDependencies  = parseCommaList(args[`-M`])
 	)
 
 	safeRepoURL, isWildcardBuild := trimWildcardFromRepoURL(repoURL)
@@ -178,16 +191,18 @@ func main() {
 	}
 
 	err = createPkgbuild(output, pkgData{
-		Maintainer:      maintainer,
-		PkgName:         packageName,
-		PkgRel:          packageRelease,
-		RepoURL:         safeRepoURL,
-		License:         license,
-		PkgDesc:         description,
-		Files:           files,
-		Backup:          backup,
-		IsWildcardBuild: isWildcardBuild,
-		VersionVarName:  versionVarName,
+		Maintainer:       maintainer,
+		PkgName:          packageName,
+		PkgRel:           packageRelease,
+		RepoURL:          safeRepoURL,
+		License:          license,
+		PkgDesc:          description,
+		Files:            files,
+		Backup:           backup,
+		IsWildcardBuild:  isWildcardBuild,
+		VersionVarName:   versionVarName,
+		Dependencies:     dependencies,
+		MakeDependencies: makeDependencies,
 	})
 	if err != nil {
 		log.Fatal(err)
