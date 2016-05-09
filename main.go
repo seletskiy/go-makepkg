@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"os/exec"
 	"path"
@@ -110,7 +111,7 @@ func main() {
 
 	var (
 		description       = args[`<desc>`].(string)
-		repoURL           = args[`<repo>`].(string)
+		rawRepoURL        = args[`<repo>`].(string)
 		fileList          = args[`<file>`].([]string)
 		license           = args[`-l`].(string)
 		packageRelease    = args[`-r`].(string)
@@ -126,7 +127,18 @@ func main() {
 		makeDependencies  = parseCommaList(args[`-M`])
 	)
 
-	safeRepoURL, isWildcardBuild := trimWildcardFromRepoURL(repoURL)
+	safeRepoURL, isWildcardBuild := trimWildcardFromRepoURL(rawRepoURL)
+
+	repoURL, err := url.Parse(safeRepoURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if repoURL.Scheme == "ssh" || repoURL.Scheme == "ssh+git" {
+		safeRepoURL = strings.Replace(
+			safeRepoURL, repoURL.Scheme, "git+ssh", -1,
+		)
+	}
 
 	packageName := getPackageNameFromRepoURL(safeRepoURL)
 	if args[`-n`] != nil {
