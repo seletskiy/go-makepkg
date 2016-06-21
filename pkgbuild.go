@@ -35,6 +35,11 @@ backup=({{range .Backup}}
 )
 
 pkgver() {
+	if [[ "$PKGVER" ]]; then
+		echo "$PKGVER"
+		return
+	fi
+
 	cd "$srcdir/$pkgname"
 	local date=$(git log -1 --format="%cd" --date=short | sed s/-//g)
 	local count=$(git rev-list --count HEAD)
