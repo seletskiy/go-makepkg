@@ -63,7 +63,8 @@ build() {
 
 	git submodule update --init
 
-	go get -v {{if ne .VersionVarName ""}}\
+	go get -v \
+		-gcflags "-trimpath $GOPATH/src"{{if ne .VersionVarName ""}} \
 		-ldflags="-X main.{{.VersionVarName}}=$pkgver-$pkgrel"{{end}}{{if .IsWildcardBuild}} \
 		./...{{end}}
 }
