@@ -140,6 +140,16 @@ func main() {
 		)
 	}
 
+	// handle git@github.com:
+	if strings.Contains(repoURL.Host, ":") {
+		safeRepoURL = strings.Replace(
+			safeRepoURL,
+			repoURL.Host,
+			strings.Replace(repoURL.Host, ":", "/", -1),
+			-1,
+		)
+	}
+
 	packageName := getPackageNameFromRepoURL(safeRepoURL)
 	if args[`-n`] != nil {
 		packageName = args[`-n`].(string)
