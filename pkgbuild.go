@@ -21,7 +21,7 @@ makedepends=(
 )
 
 source=(
-	"{{.PkgName}}::{{.RepoURL}}"{{range .Files}}
+	"{{.PkgName}}::{{.RepoURL}}#branch=${BRANCH:-master}"{{range .Files}}
 	"{{.Name}}"{{end}}
 )
 
@@ -61,11 +61,9 @@ build() {
 	cd "$srcdir/.go/src/$pkgname/"
 	ln -sf "$srcdir/.go/src/$pkgname/" "$srcdir/$pkgname"
 
-	git submodule init
-	git submodule update
+	git submodule update --init
 
-	echo "Running 'go get'..."
-	GO15VENDOREXPERIMENT=1 go get{{if ne .VersionVarName ""}} \
+	go get -v {{if ne .VersionVarName ""}}\
 		-ldflags="-X main.{{.VersionVarName}}=$pkgver-$pkgrel"{{end}}{{if .IsWildcardBuild}} \
 		./...{{end}}
 }
