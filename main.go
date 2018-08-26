@@ -78,6 +78,7 @@ type pkgData struct {
 	PkgName          string
 	PkgRel           string
 	PkgDesc          string
+	ProgramName      string
 	RepoURL          string
 	License          string
 	Files            []pkgFile
@@ -216,6 +217,7 @@ func main() {
 		Maintainer:       maintainer,
 		PkgName:          packageName,
 		PkgRel:           packageRelease,
+		ProgramName:      strings.TrimSuffix(packageName, "-git"),
 		RepoURL:          safeRepoURL,
 		License:          license,
 		PkgDesc:          description,
