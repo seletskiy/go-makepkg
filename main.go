@@ -122,7 +122,7 @@ func main() {
 		doCleanUp         = args[`-c`].(bool)
 		doCreateService   = args[`-s`].(bool)
 		doCreateGitignore = args[`-g`].(bool)
-		maintainer        = args[`-m`].(string)
+		maintainer, _     = args[`-m`].(string)
 		versionVarName, _ = args[`-p`].(string)
 		dependencies      = parseCommaList(args[`-D`])
 		makeDependencies  = parseCommaList(args[`-M`])
