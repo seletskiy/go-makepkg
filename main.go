@@ -60,7 +60,7 @@ Options:
   -l <LICENSE>  License to use [default: GPL].
   -r <PKGREL>   Specify package release number [default: 1].
   -d <DIR>      Directory to place PKGBUILD [default: build].
-  -o <NAME>     File to write PKGBULD [default: PKGBUILD].
+  -o <NAME>     File to write PKGBUILD [default: PKGBUILD].
   -m <NAME>     Specify maintainer$MAINTAINER.
   -p <VAR>      Pass pkgver to specified global variable using ldflags.
   -D <LIST>     Comma-separated list of runtime package dependencies (depends).
