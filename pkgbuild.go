@@ -22,7 +22,7 @@ makedepends=(
 )
 
 source=(
-	"$_pkgname::{{.RepoURL}}#branch=${BRANCH:-master}"{{range .Files}}
+	"$_pkgname::git+{{.RepoURL}}#branch=${BRANCH:-master}"{{range .Files}}
 	"{{.Name}}"{{end}}
 )
 
