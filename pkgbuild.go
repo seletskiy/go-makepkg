@@ -78,9 +78,10 @@ build() {
 }
 
 package() {
-	find "$srcdir/go/bin/" -type f -executable | while read filename; do
-		install -DT "$filename" "$pkgdir/usr/bin/$(basename $filename)"
-	done{{range .Files}}
+	find "$srcdir/go/bin/" -type f -executable -execdir \
+		install -DT "{}" "$pkgdir/usr/bin/{}" ";"
+
+	{{range .Files}}
 	install -DT -m0755 "$srcdir/{{.Name}}" "$pkgdir/{{.Path}}"{{end}}
 }
 `))
